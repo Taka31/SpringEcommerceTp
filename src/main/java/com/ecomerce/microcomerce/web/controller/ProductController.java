@@ -1,7 +1,9 @@
 package com.ecomerce.microcomerce.web.controller;
 
 import com.ecomerce.microcomerce.dao.ProductDao;
+import com.ecomerce.microcomerce.exception.ProductNotFoundException;
 import com.ecomerce.microcomerce.model.Product;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,7 +11,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 @RestController
 public class ProductController {
@@ -27,7 +29,12 @@ public class ProductController {
     }
 
     @GetMapping("/Produits/{id}")
-    public Optional<Product> getProduit(@PathVariable int id) {
+    public Product getProduitById(@PathVariable int id) {
+        Product myProduct = dao.findById(id);
+        if (Objects.isNull(myProduct)) {
+            throw new ProductNotFoundException("Product not Found");
+        }
+
         return dao.findById(id);
     }
 
@@ -37,7 +44,7 @@ public class ProductController {
     }
 
     @PostMapping("/Produits")
-    public ResponseEntity<Product> addProduct(@RequestBody Product product) {
+    public ResponseEntity<Product> addProduct(@Valid @RequestBody Product product) {
         Product productAdded = dao.save(product);
         if (productAdded == null) {
             return ResponseEntity.noContent().build();
@@ -57,8 +64,7 @@ public class ProductController {
     }
 
     @GetMapping("/filter/{chaine}")
-    public List<Product> getFilterByChar(@PathVariable String chaine){
+    public List<Product> getFilterByChar(@PathVariable String chaine) {
         return dao.findProductsByDescriptionContainingLetterR(chaine);
     }
-
 }
